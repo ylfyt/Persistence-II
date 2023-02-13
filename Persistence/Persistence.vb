@@ -28,21 +28,30 @@ Public Class Persistence
     End Sub
 
     Private Sub OnKeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
-        If e.KeyCode = 89 Then
-            PP = Game.Player.Character
-            If PP.IsInVehicle() Then
-                LV = PP.LastVehicle
-                Dim vehiclePath As String = Path.Combine(xmlPath, $"{GetPlayerCharacter()}_{LV.Model.Hash}_{LV.NumberPlate}.xml")
-                If File.Exists(vehiclePath) Then
-                    Try
-                        File.Delete(vehiclePath)
-                        UI.Notify("This vehicle was successfully deleted")
-                    Catch ex As Exception
-                        UI.Notify("Failed to delete this vehicle")
-                    End Try
-                Else
-                    UI.Notify("This vehicle has not been saved yet")
-                End If
+        If e.KeyCode = Keys.Y Then
+            DeleteVehicle()
+        End If
+
+        If e.KeyCode = Keys.D0 Then
+            Reload()
+            Script.Wait(1000)
+        End If
+    End Sub
+
+    Private Sub DeleteVehicle()
+        PP = Game.Player.Character
+        If PP.IsInVehicle() Then
+            LV = PP.LastVehicle
+            Dim vehiclePath As String = Path.Combine(xmlPath, $"{GetPlayerCharacter()}_{LV.Model.Hash}_{LV.NumberPlate}.xml")
+            If File.Exists(vehiclePath) Then
+                Try
+                    File.Delete(vehiclePath)
+                    UI.Notify("This vehicle was successfully deleted")
+                Catch ex As Exception
+                    UI.Notify("Failed to delete this vehicle")
+                End Try
+            Else
+                UI.Notify("This vehicle has not been saved yet")
             End If
         End If
     End Sub
@@ -72,26 +81,30 @@ Public Class Persistence
         End If
 
         If Cheating("reload persistence2") Then
-            Try
-                For Each veh As Vehicle In listOfVeh
-                    If veh.ExistsOn(modDecor) Then
-                        If showBlips Then veh.CurrentBlip.Remove()
-                        veh.Delete()
-                    End If
-                Next
-                listOfVeh = New List(Of Vehicle)
-                For Each trl As Vehicle In listOfTrl
-                    If trl.ExistsOn(modDecor) Then
-                        trl.Delete()
-                    End If
-                Next
-                listOfTrl = New List(Of Vehicle)
-                IsVehicleLoaded = False
-                IsVehicleLoading = False
-            Catch ex As Exception
-                Logger.Log($"{ex.Message}{ex.HResult}{ex.StackTrace}")
-            End Try
+            Reload()
         End If
+    End Sub
+
+    Private Sub Reload()
+        Try
+            For Each veh As Vehicle In listOfVeh
+                If veh.ExistsOn(modDecor) Then
+                    If showBlips Then veh.CurrentBlip.Remove()
+                    veh.Delete()
+                End If
+            Next
+            listOfVeh = New List(Of Vehicle)
+            For Each trl As Vehicle In listOfTrl
+                If trl.ExistsOn(modDecor) Then
+                    trl.Delete()
+                End If
+            Next
+            listOfTrl = New List(Of Vehicle)
+            IsVehicleLoaded = False
+            IsVehicleLoading = False
+        Catch ex As Exception
+            Logger.Log($"{ex.Message}{ex.HResult}{ex.StackTrace}")
+        End Try
     End Sub
 
     Private Sub PersistenceScriptRun()
